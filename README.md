@@ -1,4 +1,4 @@
-## приложение для генерации листинга кода для курсовых работ и отчетов
+## Утилита для генерации листинга кода для курсовых работ и отчетов
 
 ```
 genlist --help
@@ -19,7 +19,9 @@ options:
   -o O                  path to result .docx file (explicit extension is required)
 ```
 
-### пример использования
+### Рекомендую открыть файл примера и скопировать шаблон оттуда. В шаблон передается `items`.
+
+### Пример использования
 
 ```$ genlist -iext .py -ename __init__.py  -i examples/example.docx  -d ~/code/djplathack/src/djplathack -o /tmp/file.docx```
 
