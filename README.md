@@ -1,7 +1,7 @@
 ## приложение для генерации листинга кода для курсовых работ и отчетов
 
 ```
-genlist --help                                                                                                                  
+genlist --help
 usage: genlist [-h] -i I -d D [-iext IEXT [IEXT ...]] [-eext EEXT [EEXT ...]] [-iname INAME [INAME ...]] [-ename ENAME [ENAME ...]] -o O
 
 options:
