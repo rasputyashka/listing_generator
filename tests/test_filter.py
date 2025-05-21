@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from listing_generator.filters import ExtensionFilter, EmptyFilter
+from listing_generator.application.filters import ExtensionFilter, EmptyFilter
 
 
 def test_extension_filter():
@@ -16,7 +16,7 @@ def test_extension_filter():
     ]
 
     root_filter = EmptyFilter(input_data)
-    filter = ExtensionFilter(root_filter, allowed_extensions=["py", "bar"])
+    filter = ExtensionFilter(root_filter, allowed_extensions=[".py", ".bar"])
     out_data = filter.filter()
     expected = [
         Path("foo.bar"),

@@ -14,9 +14,11 @@ build-backend = "setuptools.build_meta"
 package-dir = { "" = "src" }
 
 [dependency-groups]
-lint = [
+dev = [
     "pre-commit>=4.2.0",
 ]
-test = [
-    "pytest>=8.3.5",
-]
+lint = ["pre-commit>=4.2.0"]
+test = ["pytest>=8.3.5"]
+
+[project.scripts]
+genlist = "listing_generator.presentation.cli:main"
