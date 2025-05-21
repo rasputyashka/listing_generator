@@ -1,0 +1,22 @@
+[project]
+name = "listing-generator"
+version = "0.1.0"
+description = "A tool that generates code listings for paperworks used in universities"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = ["docxtpl>=0.20.0"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[dependency-groups]
+lint = [
+    "pre-commit>=4.2.0",
+]
+test = [
+    "pytest>=8.3.5",
+]
