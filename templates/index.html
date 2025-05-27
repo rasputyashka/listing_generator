@@ -3,421 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>University Paperwork Processor</title>
+    <title>Document Processor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 0;
+        .folder-content {
+            transition: all 0.2s ease-in-out;
         }
 
-        .container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 20px;
-            background: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            border-radius: 8px;
+        .folder-toggle svg {
+            transition: transform 0.2s ease-in-out;
         }
 
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 1.5rem;
+        .folder-toggle:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: 2px;
         }
 
-        .upload-section {
-            margin: 20px 0;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background: #f9f9f9;
+        /* Custom scrollbar for file tree */
+        #fileTree::-webkit-scrollbar {
+            width: 8px;
         }
 
-        .file-input-group {
-            margin: 15px 0;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        input[type="file"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
+        #fileTree::-webkit-scrollbar-track {
+            background: #f1f5f9;
             border-radius: 4px;
         }
 
-        #fileModal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
-        }
-
-        .file-list {
-            max-height: 200px;
-            overflow-y: auto;
-            margin: 15px 0;
-            padding: 10px;
-            border: 1px solid #eee;
-            background: white;
-        }
-
-        .file-item {
-            margin: 5px 0;
-            padding: 5px;
-        }
-
-        .options {
-            margin: 20px 0;
-            padding: 15px;
-            background: #f0f8ff;
-            border-radius: 5px;
-        }
-
-        .options label {
-            display: flex;
-            align-items: center;
-            margin: 8px 0;
-            cursor: pointer;
-        }
-
-        .options input[type="checkbox"] {
-            margin-right: 10px;
-        }
-
-        .archive-name {
-            margin: 15px 0;
-        }
-
-        .archive-name input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
+        #fileTree::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
             border-radius: 4px;
-            margin-top: 5px;
         }
 
-        .modal-buttons {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 20px;
-        }
-
-        button {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-left: 10px;
-            font-size: 1rem;
-            transition: background 0.3s;
-        }
-
-        button:hover {
-            background: #2980b9;
-        }
-
-        button.secondary {
-            background: #95a5a6;
-        }
-
-        button.secondary:hover {
-            background: #7f8c8d;
-        }
-
-        .loading {
-            display: none;
-            margin: 15px 0;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 4px;
-            text-align: center;
-            color: #666;
-        }
-
-        .requirements {
-            background: #e8f4f8;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            color: #2c3e50;
-        }
-
-        .requirements ul {
-            margin: 10px 0 0 20px;
-            padding: 0;
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                margin: 1rem;
-                padding: 15px;
-            }
-            
-            .modal-content {
-                width: 95%;
-                padding: 15px;
-            }
+        #fileTree::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>University Paperwork Generator</h1>
-        
-        <div class="requirements">
-            <p><strong>Requirements:</strong></p>
-            <ul>
-                <li>Upload a ZIP archive containing all supporting documents</li>
-                <li>Upload a Word document (DOCX) with the main paperwork</li>
-                <li>After processing, you can select which files to include in the final package</li>
-            </ul>
-        </div>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Main Page -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-2xl mx-auto">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-light text-gray-900 mb-2">Document Processor</h1>
+                    <p class="text-gray-600">Upload your DOCX template and ZIP file to get started</p>
+                </div>
 
-        <div class="upload-section">
-            <div class="file-input-group">
-                <label for="zipInput">Supporting Documents (ZIP Archive):</label>
-                <input type="file" id="zipInput" accept=".zip">
-            </div>
-            
-            <div class="file-input-group">
-                <label for="docxInput">Main Paperwork (Word Document):</label>
-                <input type="file" id="docxInput" accept=".docx">
-            </div>
+                <form id="uploadForm" class="space-y-6">
+                    <!-- DOCX Template Upload -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">DOCX Template</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                            <input type="file" id="docxFile" accept=".docx" class="hidden" required>
+                            <div id="docxDropZone" class="cursor-pointer">
+                                <i data-lucide="file-text" class="w-8 h-8 mx-auto text-gray-400 mb-2"></i>
+                                <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
+                                <p class="text-xs text-gray-400 mt-1">DOCX files only</p>
+                            </div>
+                            <div id="docxFileName" class="hidden mt-2 text-sm text-green-600"></div>
+                        </div>
+                    </div>
 
-            <button onclick="handleUpload()">Process Documents</button>
-            <div class="loading" id="uploadLoading">Uploading and analyzing documents...</div>
-        </div>
-    </div>
+                    <!-- ZIP File Upload -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">ZIP Archive</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                            <input type="file" id="zipFile" accept=".zip" class="hidden" required>
+                            <div id="zipDropZone" class="cursor-pointer">
+                                <i data-lucide="archive" class="w-8 h-8 mx-auto text-gray-400 mb-2"></i>
+                                <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
+                                <p class="text-xs text-gray-400 mt-1">ZIP files only</p>
+                            </div>
+                            <div id="zipFileName" class="hidden mt-2 text-sm text-green-600"></div>
+                        </div>
+                    </div>
 
-    <!-- File Selection Modal -->
-    <div id="fileModal">
-        <div class="modal-content">
-            <h3>Select Files to Include</h3>
-            <p>Review the files found in your archive:</p>
-            
-            <div class="file-list" id="fileList">
-                <!-- File checkboxes will be inserted here -->
-            </div>
-            
-            <div class="options">
-                <h4>Processing Options:</h4>
-                <label>
-                    <input type="checkbox" id="minimizeOutput" checked>
-                    Minimize output files (optimize size)
-                </label>
-                <label>
-                    <input type="checkbox" id="removeBlanks" checked>
-                    Remove blank/empty documents
-                </label>
-            </div>
-
-            <div class="archive-name">
-                <label for="archiveName">Output Archive Name:</label>
-                <input type="text" id="archiveName" placeholder="e.g., university_paperwork_2023" value="university_paperwork">
-            </div>
-
-            <div class="modal-buttons">
-                <button class="secondary" onclick="closeModal()">Cancel</button>
-                <button onclick="processSelection()">Generate Final Package</button>
-                <div class="loading" id="processLoading">Creating your package...</div>
+                    <!-- Submit Button -->
+                    <button type="submit" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span id="submitText">Process Files</span>
+                        <div id="submitLoader" class="hidden inline-flex items-center">
+                            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Processing...
+                        </div>
+                    </button>
+                </form>
             </div>
         </div>
     </div>
 
-    <script>
-        let currentUploadId = null;
+    <!-- Popup Modal - Now Much Larger -->
+    <div id="popup" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-6 z-50">
+        <div class="bg-white rounded-xl shadow-xl w-full h-full max-w-7xl max-h-[95vh] overflow-hidden flex flex-col">
+            <!-- Popup Header -->
+            <div class="px-8 py-6 border-b border-gray-200 flex items-center justify-between">
+                <h2 class="text-2xl font-semibold text-gray-900">Configure Processing Options</h2>
+                <button id="closePopup" class="text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="w-7 h-7"></i>
+                </button>
+            </div>
 
-        // Validate DOCX file on selection
-        document.getElementById('docxInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file && !file.name.toLowerCase().endsWith('.docx')) {
-                alert('Please upload a valid Word document (.docx file)');
-                e.target.value = '';
-            }
-        });
+            <!-- Popup Content - Expanded Layout -->
+            <div class="px-8 py-6 flex-1 flex flex-col overflow-hidden">
+                <div class="grid grid-cols-1 xl:grid-cols-4 gap-8 flex-1 overflow-hidden">
+                    <!-- File Tree - Much Larger -->
+                    <div class="xl:col-span-3 flex flex-col overflow-hidden">
+                        <h3 class="text-xl font-medium text-gray-900 mb-4">File Structure</h3>
+                        <div class="bg-gray-50 rounded-lg p-6 flex-1 overflow-hidden border border-gray-200">
+                            <div id="fileTree" class="font-mono text-base text-gray-700 h-full overflow-y-auto">
+                                <!-- File tree will be populated here -->
+                            </div>
+                        </div>
+                    </div>
 
-        async function handleUpload() {
-            const zipFile = document.getElementById('zipInput').files[0];
-            const docxFile = document.getElementById('docxInput').files[0];
-            
-            if (!zipFile) {
-                alert('Please select a ZIP archive containing your supporting documents');
-                return;
-            }
-            
-            if (!docxFile) {
-                alert('Please upload your main paperwork Word document');
-                return;
-            }
+                    <!-- Options Panel -->
+                    <div class="flex flex-col overflow-y-auto">
+                        <div class="space-y-8">
+                            <!-- Processing Options -->
+                            <div class="space-y-4">
+                                <h3 class="text-xl font-medium text-gray-900">Processing Options</h3>
+                                <div class="space-y-3">
+                                    <label class="flex items-center space-x-3">
+                                        <input type="checkbox" id="removeEmptyFiles" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4">
+                                        <span class="text-base text-gray-700">Remove empty files</span>
+                                    </label>
+                                    <label class="flex items-center space-x-3">
+                                        <input type="checkbox" id="minimizeLineCount" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4">
+                                        <span class="text-base text-gray-700">Minimize line count</span>
+                                    </label>
+                                </div>
+                            </div>
 
-            showLoading('uploadLoading');
+                            <!-- Include Files -->
+                            <div class="space-y-3">
+                                <label class="block text-base font-medium text-gray-700">Include Files (comma-separated)</label>
+                                <textarea id="includeFiles" placeholder="e.g., main.js, config.json, README.md"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none h-24 text-base"></textarea>
+                            </div>
 
-            const formData = new FormData();
-            formData.append('zip', zipFile);
-            formData.append('docx', docxFile);
+                            <!-- Exclude Files -->
+                            <div class="space-y-3">
+                                <label class="block text-base font-medium text-gray-700">Exclude Files (comma-separated)</label>
+                                <textarea id="excludeFiles" placeholder="e.g., temp.log, cache.tmp, debug.txt"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none h-24 text-base"></textarea>
+                            </div>
 
-            try {
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Server responded with error');
-                }
-                
-                const data = await response.json();
-                
-                if (data.error) {
-                    throw new Error(data.error);
-                }
+                            <!-- Include Extensions -->
+                            <div class="space-y-3">
+                                <label class="block text-base font-medium text-gray-700">Include Extensions (comma-separated)</label>
+                                <input type="text" id="includeExtensions" placeholder="e.g., .js, .py, .html, .css"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base">
+                            </div>
 
-                currentUploadId = data.uploadId;
-                showFileModal(data.files);
-            } catch (error) {
-                alert(`Error: ${error.message}`);
-                console.error('Upload error:', error);
-            } finally {
-                hideLoading('uploadLoading');
-            }
-        }
+                            <!-- Exclude Extensions -->
+                            <div class="space-y-3">
+                                <label class="block text-base font-medium text-gray-700">Exclude Extensions (comma-separated)</label>
+                                <input type="text" id="excludeExtensions" placeholder="e.g., .log, .tmp, .cache"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        function showFileModal(files) {
-            const fileList = document.getElementById('fileList');
-            fileList.innerHTML = '';
-            
-            if (files.length === 0) {
-                fileList.innerHTML = '<p>No files found in the archive</p>';
-            } else {
-                files.forEach(file => {
-                    const fileItem = document.createElement('div');
-                    fileItem.className = 'file-item';
-                    fileItem.innerHTML = `
-                        <label>
-                            <input type="checkbox" class="file-checkbox" value="${file}" checked>
-                            ${file}
-                        </label>
-                    `;
-                    fileList.appendChild(fileItem);
-                });
-            }
+            <!-- Popup Footer -->
+            <div class="px-8 py-6 border-t border-gray-200 flex justify-end space-x-4 bg-gray-50">
+                <button id="cancelPopup" class="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-base font-medium">
+                    Cancel
+                </button>
+                <button id="submitPopup" class="px-8 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-base">
+                    <span id="popupSubmitText">Generate Document</span>
+                    <div id="popupSubmitLoader" class="hidden inline-flex items-center">
+                        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        Processing...
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
 
-            document.getElementById('fileModal').style.display = 'flex';
-        }
-
-        async function processSelection() {
-            const selectedFiles = Array.from(document.querySelectorAll('.file-checkbox:checked'))
-                .map(checkbox => checkbox.value);
-
-            if (selectedFiles.length === 0) {
-                alert('Please select at least one file to include');
-                return;
-            }
-
-            const options = {
-                minimizeOutput: document.getElementById('minimizeOutput').checked,
-                removeBlanks: document.getElementById('removeBlanks').checked
-            };
-
-            let archiveName = document.getElementById('archiveName').value.trim();
-            if (!archiveName) {
-                archiveName = 'university_paperwork';
-            }
-            
-            // Ensure it ends with .zip
-            if (!archiveName.toLowerCase().endsWith('.zip')) {
-                archiveName += '.zip';
-            }
-
-            showLoading('processLoading');
-
-            try {
-                const response = await fetch('/process', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        uploadId: currentUploadId,
-                        files: selectedFiles,
-                        options,
-                        archiveName
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Server error during processing');
-                }
-
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = archiveName;
-                document.body.appendChild(a);
-                a.click();
-                
-                // Cleanup
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                }, 100);
-                
-                closeModal();
-            } catch (error) {
-                alert(`Error generating package: ${error.message}`);
-                console.error('Processing error:', error);
-            } finally {
-                hideLoading('processLoading');
-            }
-        }
-
-        function closeModal() {
-            document.getElementById('fileModal').style.display = 'none';
-            currentUploadId = null;
-        }
-
-        function showLoading(elementId) {
-            document.getElementById(elementId).style.display = 'block';
-            // Disable buttons during loading
-            document.querySelectorAll('button').forEach(btn => {
-                btn.disabled = true;
-            });
-        }
-
-        function hideLoading(elementId) {
-            document.getElementById(elementId).style.display = 'none';
-            // Re-enable buttons
-            document.querySelectorAll('button').forEach(btn => {
-                btn.disabled = false;
-            });
-        }
+    <script type="text/javascript">
+      {% include "main.js" %}
     </script>
-</body>
-</html>
+    <script>
+      lucide.createIcons();
+    </script>
+  </body >
+</html >
