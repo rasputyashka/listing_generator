@@ -61,3 +61,12 @@ class ExcludeFileNameFilter(BaseFilter):
     def filter(self) -> list[Path]:
         items = self.wrapee.filter()
         return [item for item in items if item.name not in self.excluded_filenames]
+
+
+class EmptyFileFilter(BaseFilter):
+    def __init__(self, wrapee: BaseFilter):
+        self.wrapee = wrapee
+
+    def filter(self) -> list[Path]:
+        items = self.wrapee.filter()
+        return [item for item in items if item.read_bytes()]

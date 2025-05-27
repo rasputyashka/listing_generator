@@ -16,13 +16,16 @@ class FormatTemplateCommand:
         self.out_path = out_path
         self.source_directory = source_directory
 
-    def execute(self, paths: list[Path]):
+    def execute(self, paths: list[Path], minimize=False):
         items = []
         for path in paths:
+            path_text = path.read_text(encoding="utf-8")
+            if minimize:
+                path_text = path_text.replace("\n\n", "\n")
             items.append(
                 ListingSource(
                     path=path.relative_to(self.source_directory),
-                    text=path.read_text(encoding="utf-8"),
+                    text=path_text,
                 )
             )
         formatter = self.formatter_type(self.template_path)

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Paperwork Processor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .upload-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+
+        .file-input-group {
+            margin: 15px 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        #fileModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        }
+
+        .file-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 15px 0;
+            padding: 10px;
+            border: 1px solid #eee;
+            background: white;
+        }
+
+        .file-item {
+            margin: 5px 0;
+            padding: 5px;
+        }
+
+        .options {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f0f8ff;
+            border-radius: 5px;
+        }
+
+        .options label {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            cursor: pointer;
+        }
+
+        .options input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .archive-name {
+            margin: 15px 0;
+        }
+
+        .archive-name input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        button.secondary {
+            background: #95a5a6;
+        }
+
+        button.secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .loading {
+            display: none;
+            margin: 15px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            text-align: center;
+            color: #666;
+        }
+
+        .requirements {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .requirements ul {
+            margin: 10px 0 0 20px;
+            padding: 0;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 1rem;
+                padding: 15px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>University Paperwork Generator</h1>
+        
+        <div class="requirements">
+            <p><strong>Requirements:</strong></p>
+            <ul>
+                <li>Upload a ZIP archive containing all supporting documents</li>
+                <li>Upload a Word document (DOCX) with the main paperwork</li>
+                <li>After processing, you can select which files to include in the final package</li>
+            </ul>
+        </div>
+
+        <div class="upload-section">
+            <div class="file-input-group">
+                <label for="zipInput">Supporting Documents (ZIP Archive):</label>
+                <input type="file" id="zipInput" accept=".zip">
+            </div>
+            
+            <div class="file-input-group">
+                <label for="docxInput">Main Paperwork (Word Document):</label>
+                <input type="file" id="docxInput" accept=".docx">
+            </div>
+
+            <button onclick="handleUpload()">Process Documents</button>
+            <div class="loading" id="uploadLoading">Uploading and analyzing documents...</div>
+        </div>
+    </div>
+
+    <!-- File Selection Modal -->
+    <div id="fileModal">
+        <div class="modal-content">
+            <h3>Select Files to Include</h3>
+            <p>Review the files found in your archive:</p>
+            
+            <div class="file-list" id="fileList">
+                <!-- File checkboxes will be inserted here -->
+            </div>
+            
+            <div class="options">
+                <h4>Processing Options:</h4>
+                <label>
+                    <input type="checkbox" id="minimizeOutput" checked>
+                    Minimize output files (optimize size)
+                </label>
+                <label>
+                    <input type="checkbox" id="removeBlanks" checked>
+                    Remove blank/empty documents
+                </label>
+            </div>
+
+            <div class="archive-name">
+                <label for="archiveName">Output Archive Name:</label>
+                <input type="text" id="archiveName" placeholder="e.g., university_paperwork_2023" value="university_paperwork">
+            </div>
+
+            <div class="modal-buttons">
+                <button class="secondary" onclick="closeModal()">Cancel</button>
+                <button onclick="processSelection()">Generate Final Package</button>
+                <div class="loading" id="processLoading">Creating your package...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUploadId = null;
+
+        // Validate DOCX file on selection
+        document.getElementById('docxInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && !file.name.toLowerCase().endsWith('.docx')) {
+                alert('Please upload a valid Word document (.docx file)');
+                e.target.value = '';
+            }
+        });
+
+        async function handleUpload() {
+            const zipFile = document.getElementById('zipInput').files[0];
+            const docxFile = document.getElementById('docxInput').files[0];
+            
+            if (!zipFile) {
+                alert('Please select a ZIP archive containing your supporting documents');
+                return;
+            }
+            
+            if (!docxFile) {
+                alert('Please upload your main paperwork Word document');
+                return;
+            }
+
+            showLoading('uploadLoading');
+
+            const formData = new FormData();
+            formData.append('zip', zipFile);
+            formData.append('docx', docxFile);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Server responded with error');
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                currentUploadId = data.uploadId;
+                showFileModal(data.files);
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+                console.error('Upload error:', error);
+            } finally {
+                hideLoading('uploadLoading');
+            }
+        }
+
+        function showFileModal(files) {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            
+            if (files.length === 0) {
+                fileList.innerHTML = '<p>No files found in the archive</p>';
+            } else {
+                files.forEach(file => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                        <label>
+                            <input type="checkbox" class="file-checkbox" value="${file}" checked>
+                            ${file}
+                        </label>
+                    `;
+                    fileList.appendChild(fileItem);
+                });
+            }
+
+            document.getElementById('fileModal').style.display = 'flex';
+        }
+
+        async function processSelection() {
+            const selectedFiles = Array.from(document.querySelectorAll('.file-checkbox:checked'))
+                .map(checkbox => checkbox.value);
+
+            if (selectedFiles.length === 0) {
+                alert('Please select at least one file to include');
+                return;
+            }
+
+            const options = {
+                minimizeOutput: document.getElementById('minimizeOutput').checked,
+                removeBlanks: document.getElementById('removeBlanks').checked
+            };
+
+            let archiveName = document.getElementById('archiveName').value.trim();
+            if (!archiveName) {
+                archiveName = 'university_paperwork';
+            }
+            
+            // Ensure it ends with .zip
+            if (!archiveName.toLowerCase().endsWith('.zip')) {
+                archiveName += '.zip';
+            }
+
+            showLoading('processLoading');
+
+            try {
+                const response = await fetch('/process', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        uploadId: currentUploadId,
+                        files: selectedFiles,
+                        options,
+                        archiveName
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Server error during processing');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = archiveName;
+                document.body.appendChild(a);
+                a.click();
+                
+                // Cleanup
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }, 100);
+                
+                closeModal();
+            } catch (error) {
+                alert(`Error generating package: ${error.message}`);
+                console.error('Processing error:', error);
+            } finally {
+                hideLoading('processLoading');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('fileModal').style.display = 'none';
+            currentUploadId = null;
+        }
+
+        function showLoading(elementId) {
+            document.getElementById(elementId).style.display = 'block';
+            // Disable buttons during loading
+            document.querySelectorAll('button').forEach(btn => {
+                btn.disabled = true;
+            });
+        }
+
+        function hideLoading(elementId) {
+            document.getElementById(elementId).style.display = 'none';
+            // Re-enable buttons
+            document.querySelectorAll('button').forEach(btn => {
+                btn.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>

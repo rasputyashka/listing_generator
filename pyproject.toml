@@ -4,7 +4,12 @@ version = "0.1.0"
 description = "A tool that generates code listings for paperworks used in universities"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = ["docxtpl>=0.20.0"]
+dependencies = [
+    "docxtpl>=0.20.0",
+    "fastapi>=0.115.12",
+    "python-multipart>=0.0.20",
+    "uvicorn>=0.34.2",
+]
 
 [build-system]
 requires = ["setuptools>=61.0"]
