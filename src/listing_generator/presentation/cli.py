@@ -7,6 +7,7 @@ from listing_generator.application.filters import (
     IncludeExtensionFilter,
     EmptyFilter,
     InlcudeFileNameFilter,
+    EmptyFileFilter,
 )
 from listing_generator.application.formatters import TemplateFormatter
 
@@ -36,10 +37,18 @@ def main():
         help="path to result .docx file (explicit extension is required)",
         required=True,
     )
+    parser.add_argument(
+        "-m",
+        help="reduce amount of code by replacing doubled line breaks with one line break",
+        default=False,
+        action="store_true",
+    )
+
     args = parser.parse_args()
     abs_doc_path = Path(args.i).absolute()
     abs_dir_path = Path(args.d).absolute()
     abs_output_doc_path = Path(args.o).absolute()
+    minimize = args.m
 
     items = abs_dir_path.rglob("*")
     filter = ExcludeFileNameFilter(
@@ -55,6 +64,8 @@ def main():
         ),
         excluded_filenames=args.ename,
     )
+    if minimize:
+        filter = EmptyFileFilter(filter)
     items = filter.filter()
     command = FormatTemplateCommand(
         TemplateFormatter, abs_doc_path, abs_output_doc_path, abs_dir_path

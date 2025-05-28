@@ -12,5 +12,5 @@ class TemplateFormatter:
     def render(self, items: list[ListingSource]):
         context = {"items": items, "blank": ""}
         document = DocxTemplate(self.in_file)
-        document.render(context, autoescape=True)  # there's no need to midify xml
+        document.render(context, autoescape=True)
         return document
