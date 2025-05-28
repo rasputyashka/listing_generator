@@ -7,6 +7,7 @@ from listing_generator.application.filters import (
     IncludeExtensionFilter,
     EmptyFilter,
     InlcudeFileNameFilter,
+    EmptyFileFilter,
 )
 from listing_generator.application.formatters import TemplateFormatter
 
@@ -63,8 +64,10 @@ def main():
         ),
         excluded_filenames=args.ename,
     )
+    if minimize:
+        filter = EmptyFileFilter(filter)
     items = filter.filter()
     command = FormatTemplateCommand(
         TemplateFormatter, abs_doc_path, abs_output_doc_path, abs_dir_path
     )
-    command.execute(items, minimize=minimize)
+    command.execute(items)

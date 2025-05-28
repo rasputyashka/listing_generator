@@ -16,6 +16,7 @@ from listing_generator.application.commands import (
 )
 from listing_generator.application.formatters import TemplateFormatter
 from listing_generator.application.filters import (
+    EmptyFileFilter,
     ExcludeExtensionFilter,
     ExcludeFileNameFilter,
     IncludeExtensionFilter,
@@ -116,7 +117,7 @@ async def upload_files(
     for root, _, files in os.walk(extract_dir):
         for file in files:
             rel_path = os.path.relpath(os.path.join(root, file), extract_dir)
-            zip_files.append(rel_path.replace("\\", "/"))  # Use forward slashes
+            zip_files.append(rel_path.replace("\\", "/"))
 
     file_structure = extract_zip_structure(zip_path)
 
@@ -157,6 +158,9 @@ async def process_files(config: ProcessingConfig):
         ),
         excluded_filenames=config.exclude_files,
     )
+    if config.options.minimize_line_count:
+        filter = EmptyFileFilter(filter)
+
     items = filter.filter()
     logger.debug(f"Filtered items: {items}")
     command = FormatTemplateCommand(
