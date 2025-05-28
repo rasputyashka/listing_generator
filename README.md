@@ -14,14 +14,14 @@ Listing Generator
 ------------
 Для веб версии просто склонируйте репозиторий:
 
-```
+```bash
 $ git clone https://github.com/rasputyashka/listing_generator.git
 $ cd listing_generator
 ```
 
 Для CLI версии склонируйте репозиторий и установите зависимости в венв
 
-```
+```bash
 $ git clone https://github.com/rasputyashka/listing_generator.git
 $ cd listing_generator
 $ uv sync && . .venv/bin/activate
@@ -29,7 +29,7 @@ $ uv sync && . .venv/bin/activate
 
 Ну или
 
-```
+```bash
 $ git clone https://github.com/rasputyashka/listing_generator.git
 $ cd listing_generator
 $ python -m venv .venv && . .venv/bin/activate
@@ -39,13 +39,13 @@ $ pip install .
 Использование
 -----
 WEB:
-```
+```bash
 $ docker compose up
 ```
 Веб версия доступна по адресу 127.0.0.1:5000
 
 CLI:
-```
+```bash
 $ genlist --help
 usage: genlist [-h] -i I -d D [-iext IEXT [IEXT ...]] [-eext EEXT [EEXT ...]] [-iname INAME [INAME ...]]
                [-ename ENAME [ENAME ...]] -o O [-m]
