@@ -16,9 +16,7 @@ WORKDIR $APP_PATH
 
 FROM python-base AS builder
 
-RUN apt-get update
-
-RUN pip install --no-cache-dir "uv==$UV_VERSION"
+RUN apt-get update && pip install --no-cache-dir "uv==$UV_VERSION"
 
 COPY ./pyproject.toml ./uv.lock ./
 RUN uv venv -p 3.13 \
