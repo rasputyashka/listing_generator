@@ -1,61 +1,86 @@
-from pathlib import Path
-
+from listing_generator.application.dto import (
+    FormatTemplateAndSaveDTO,
+    FormatTemplateDTO,
+)
 from listing_generator.application.entities import ListingSource
+from listing_generator.application.filters import (
+    ExcludeExtensionFilter,
+    EmptyFilter,
+    IncludeExtensionFilter,
+    EmptyFileFilter,
+    ExcludeFileNameFilter,
+    InlcudeFileNameFilter,
+)
 
 
 class FormatTemplateAndSaveCommand:
-    def __init__(
-        self,
-        formatter_type,
-        template_path: Path,
-        out_path: Path,
-        source_directory: Path,
-    ):
-        self.formatter_type = formatter_type
-        self.template_path = template_path
-        self.out_path = out_path
-        self.source_directory = source_directory
-
-    def execute(self, paths: list[Path], minimize=False):
+    def execute(self, dto: FormatTemplateAndSaveDTO):
+        file_list = dto.file_list
+        filter = ExcludeFileNameFilter(
+            InlcudeFileNameFilter(
+                ExcludeExtensionFilter(
+                    IncludeExtensionFilter(
+                        EmptyFilter(file_list),
+                        included_extensions=dto.included_extensions,
+                    ),
+                    excluded_extensions=dto.excluded_extensions,
+                ),
+                included_filenames=dto.included_filenames,
+            ),
+            excluded_filenames=dto.excluded_filenames,
+        )
+        if dto.skip_empty_files:
+            filter = EmptyFileFilter(filter)
         items = []
-        for path in paths:
+        file_list = filter.filter()
+        for path in file_list:
             path_text = path.read_text(encoding="utf-8")
-            if minimize:
+            if dto.minimize_line_count:
                 path_text = path_text.replace("\n\n", "\n")
             items.append(
                 ListingSource(
-                    path=path.relative_to(self.source_directory),
+                    path=path.relative_to(dto.source_directory),
                     text=path_text,
                 )
             )
-        formatter = self.formatter_type(self.template_path)
+        formatter = dto.formatter_type(dto.template_path)
         document = formatter.render(items)
-        document.save(self.out_path)
+        document.save(dto.out_file_path)
 
 
 class FormatTemplateCommand:
-    def __init__(
-        self,
-        formatter_type,
-        template_path: Path,
-        source_directory: Path,
-    ):
-        self.formatter_type = formatter_type
-        self.template_path = template_path
-        self.source_directory = source_directory
-
-    def execute(self, paths: list[Path], minimize=False):
+    def execute(self, dto: FormatTemplateDTO):
+        file_list = dto.file_list
+        filter = ExcludeFileNameFilter(
+            InlcudeFileNameFilter(
+                ExcludeExtensionFilter(
+                    IncludeExtensionFilter(
+                        EmptyFilter(file_list),
+                        included_extensions=dto.included_extensions,
+                    ),
+                    excluded_extensions=dto.excluded_extensions,
+                ),
+                included_filenames=dto.included_filenames,
+            ),
+            excluded_filenames=dto.excluded_filenames,
+        )
+        if dto.skip_empty_files:
+            filter = EmptyFileFilter(filter)
         items = []
-        for path in paths:
+        file_list = filter.filter()
+        print(file_list)
+
+        items = []
+        for path in file_list:
             path_text = path.read_text(encoding="utf-8")
-            if minimize:
+            if dto.minimize_line_count:
                 path_text = path_text.replace("\n\n", "\n")
             items.append(
                 ListingSource(
-                    path=path.relative_to(self.source_directory),
+                    path=path.relative_to(dto.source_directory),
                     text=path_text,
                 )
             )
-        formatter = self.formatter_type(self.template_path)
+        formatter = dto.formatter_type(dto.template_path)
         document = formatter.render(items)
         return document

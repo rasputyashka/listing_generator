@@ -1,192 +1,186 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document Processor</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <style>
-        .folder-content {
-            transition: all 0.2s ease-in-out;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document Processor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    .folder-content {
+      transition: all 0.2s ease-in-out;
+    }
 
-        .folder-toggle svg {
-            transition: transform 0.2s ease-in-out;
-        }
+    .folder-toggle svg {
+      transition: transform 0.2s ease-in-out;
+    }
 
-        .folder-toggle:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-            border-radius: 2px;
-        }
+    .folder-toggle:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      border-radius: 2px;
+    }
 
-        /* Custom scrollbar for file tree */
-        #fileTree::-webkit-scrollbar {
-            width: 8px;
-        }
+    /* Custom scrollbar for file tree */
+    #fileTree::-webkit-scrollbar {
+      width: 8px;
+    }
 
-        #fileTree::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: 4px;
-        }
+    #fileTree::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
 
-        #fileTree::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
+    #fileTree::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
 
-        #fileTree::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-    </style>
+    #fileTree::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
 </head>
+
 <body class="bg-gray-50 min-h-screen">
-    <!-- Main Page -->
-    <div class="container mx-auto px-4 py-8">
-        <div class="max-w-2xl mx-auto">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                <div class="text-center mb-8">
-                    <h1 class="text-3xl font-light text-gray-900 mb-2">Document Processor</h1>
-                    <p class="text-gray-600">Upload your DOCX template and ZIP file to get started</p>
-                </div>
-
-                <form id="uploadForm" class="space-y-6">
-                    <!-- DOCX Template Upload -->
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">DOCX Template</label>
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                            <input type="file" id="docxFile" accept=".docx" class="hidden" required>
-                            <div id="docxDropZone" class="cursor-pointer">
-                                <i data-lucide="file-text" class="w-8 h-8 mx-auto text-gray-400 mb-2"></i>
-                                <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
-                                <p class="text-xs text-gray-400 mt-1">DOCX files only</p>
-                            </div>
-                            <div id="docxFileName" class="hidden mt-2 text-sm text-green-600"></div>
-                        </div>
-                    </div>
-
-                    <!-- ZIP File Upload -->
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">ZIP Archive</label>
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                            <input type="file" id="zipFile" accept=".zip" class="hidden" required>
-                            <div id="zipDropZone" class="cursor-pointer">
-                                <i data-lucide="archive" class="w-8 h-8 mx-auto text-gray-400 mb-2"></i>
-                                <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
-                                <p class="text-xs text-gray-400 mt-1">ZIP files only</p>
-                            </div>
-                            <div id="zipFileName" class="hidden mt-2 text-sm text-green-600"></div>
-                        </div>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <button type="submit" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed">
-                        <span id="submitText">Process Files</span>
-                        <div id="submitLoader" class="hidden inline-flex items-center">
-                            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            Processing...
-                        </div>
-                    </button>
-                </form>
-            </div>
+  <div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+        <div class="text-center mb-8">
+          <h1 class="text-3xl font-light text-gray-900 mb-2">Document Processor</h1>
+          <p class="text-gray-600">Upload your DOCX template and ZIP file to get started</p>
         </div>
-    </div>
 
-    <!-- Popup Modal - Now Much Larger -->
-    <div id="popup" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-6 z-50">
-        <div class="bg-white rounded-xl shadow-xl w-full h-full max-w-7xl max-h-[95vh] overflow-hidden flex flex-col">
-            <!-- Popup Header -->
-            <div class="px-8 py-6 border-b border-gray-200 flex items-center justify-between">
-                <h2 class="text-2xl font-semibold text-gray-900">Configure Processing Options</h2>
-                <button id="closePopup" class="text-gray-400 hover:text-gray-600">
-                    <i data-lucide="x" class="w-7 h-7"></i>
-                </button>
+        <form id="uploadForm" class="space-y-6">
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">DOCX Template</label>
+            <div
+              class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+              <input type="file" id="docxFile" accept=".docx" class="hidden" required>
+              <div id="docxDropZone" class="cursor-pointer">
+                <i data-lucide="file-text" class="w-8 h-8 mx-auto text-gray-400 mb-2"></i>
+                <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
+                <p class="text-xs text-gray-400 mt-1">DOCX files only</p>
+              </div>
+              <div id="docxFileName" class="hidden mt-2 text-sm text-green-600"></div>
             </div>
+          </div>
 
-            <!-- Popup Content - Expanded Layout -->
-            <div class="px-8 py-6 flex-1 flex flex-col overflow-hidden">
-                <div class="grid grid-cols-1 xl:grid-cols-4 gap-8 flex-1 overflow-hidden">
-                    <!-- File Tree - Much Larger -->
-                    <div class="xl:col-span-3 flex flex-col overflow-hidden">
-                        <h3 class="text-xl font-medium text-gray-900 mb-4">File Structure</h3>
-                        <div class="bg-gray-50 rounded-lg p-6 flex-1 overflow-hidden border border-gray-200">
-                            <div id="fileTree" class="font-mono text-base text-gray-700 h-full overflow-y-auto">
-                                <!-- File tree will be populated here -->
-                            </div>
-                        </div>
-                    </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">ZIP Archive</label>
+            <div
+              class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+              <input type="file" id="zipFile" accept=".zip" class="hidden" required>
+              <div id="zipDropZone" class="cursor-pointer">
+                <i data-lucide="archive" class="w-8 h-8 mx-auto text-gray-400 mb-2"></i>
+                <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
+                <p class="text-xs text-gray-400 mt-1">ZIP files only</p>
+              </div>
+              <div id="zipFileName" class="hidden mt-2 text-sm text-green-600"></div>
+            </div>
+          </div>
 
-                    <!-- Options Panel -->
-                    <div class="flex flex-col overflow-y-auto">
-                        <div class="space-y-8">
-                            <!-- Processing Options -->
-                            <div class="space-y-4">
-                                <h3 class="text-xl font-medium text-gray-900">Processing Options</h3>
-                                <div class="space-y-3">
-                                    <label class="flex items-center space-x-3">
-                                        <input type="checkbox" id="removeEmptyFiles" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4">
-                                        <span class="text-base text-gray-700">Remove empty files</span>
-                                    </label>
-                                    <label class="flex items-center space-x-3">
-                                        <input type="checkbox" id="minimizeLineCount" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4">
-                                        <span class="text-base text-gray-700">Minimize line count</span>
-                                    </label>
-                                </div>
-                            </div>
+          <button type="submit"
+            class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+            <span id="submitText">Process Files</span>
+            <div id="submitLoader" class="hidden inline-flex items-center">
+              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              Processing...
+            </div>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
 
-                            <!-- Include Files -->
-                            <div class="space-y-3">
-                                <label class="block text-base font-medium text-gray-700">Include Files (comma-separated)</label>
-                                <textarea id="includeFiles" placeholder="e.g., main.js, config.json, README.md"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none h-24 text-base"></textarea>
-                            </div>
+  <div id="popup" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-6 z-50">
+    <div class="bg-white rounded-xl shadow-xl w-full h-full max-w-7xl max-h-[95vh] overflow-hidden flex flex-col">
+      <div class="px-8 py-6 border-b border-gray-200 flex items-center justify-between">
+        <h2 class="text-2xl font-semibold text-gray-900">Configure Processing Options</h2>
+        <button id="closePopup" class="text-gray-400 hover:text-gray-600">
+          <i data-lucide="x" class="w-7 h-7"></i>
+        </button>
+      </div>
 
-                            <!-- Exclude Files -->
-                            <div class="space-y-3">
-                                <label class="block text-base font-medium text-gray-700">Exclude Files (comma-separated)</label>
-                                <textarea id="excludeFiles" placeholder="e.g., temp.log, cache.tmp, debug.txt"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none h-24 text-base"></textarea>
-                            </div>
+      <div class="px-8 py-6 flex-1 flex flex-col overflow-hidden">
+        <div class="grid grid-cols-1 xl:grid-cols-4 gap-8 flex-1 overflow-hidden">
+          <div class="xl:col-span-3 flex flex-col overflow-hidden">
+            <h3 class="text-xl font-medium text-gray-900 mb-4">File Structure</h3>
+            <div class="bg-gray-50 rounded-lg p-6 flex-1 overflow-hidden border border-gray-200">
+              <div id="fileTree" class="font-mono text-base text-gray-700 h-full overflow-y-auto">
+              </div>
+            </div>
+          </div>
 
-                            <!-- Include Extensions -->
-                            <div class="space-y-3">
-                                <label class="block text-base font-medium text-gray-700">Include Extensions (comma-separated)</label>
-                                <input type="text" id="includeExtensions" placeholder="e.g., .js, .py, .html, .css"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base">
-                            </div>
-
-                            <!-- Exclude Extensions -->
-                            <div class="space-y-3">
-                                <label class="block text-base font-medium text-gray-700">Exclude Extensions (comma-separated)</label>
-                                <input type="text" id="excludeExtensions" placeholder="e.g., .log, .tmp, .cache"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base">
-                            </div>
-                        </div>
-                    </div>
+          <div class="flex flex-col overflow-y-auto">
+            <div class="space-y-8">
+              <div class="space-y-4">
+                <h3 class="text-xl font-medium text-gray-900">Processing Options</h3>
+                <div class="space-y-3">
+                  <label class="flex items-center space-x-3">
+                    <input type="checkbox" id="removeEmptyFiles"
+                      class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4">
+                    <span class="text-base text-gray-700">Remove empty files</span>
+                  </label>
+                  <label class="flex items-center space-x-3">
+                    <input type="checkbox" id="minimizeLineCount"
+                      class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4">
+                    <span class="text-base text-gray-700">Minimize line count</span>
+                  </label>
                 </div>
-            </div>
+              </div>
 
-            <!-- Popup Footer -->
-            <div class="px-8 py-6 border-t border-gray-200 flex justify-end space-x-4 bg-gray-50">
-                <button id="cancelPopup" class="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-base font-medium">
-                    Cancel
-                </button>
-                <button id="submitPopup" class="px-8 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-base">
-                    <span id="popupSubmitText">Generate Document</span>
-                    <div id="popupSubmitLoader" class="hidden inline-flex items-center">
-                        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                        Processing...
-                    </div>
-                </button>
+              <div class="space-y-3">
+                <label class="block text-base font-medium text-gray-700">Include Files (comma-separated)</label>
+                <textarea id="includeFiles" placeholder="e.g., main.js, config.json, README.md"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none h-24 text-base">*</textarea>
+              </div>
+
+              <div class="space-y-3">
+                <label class="block text-base font-medium text-gray-700">Exclude Files (comma-separated)</label>
+                <textarea id="excludeFiles" placeholder="e.g., temp.log, cache.tmp, debug.txt"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none h-24 text-base"></textarea>
+              </div>
+
+              <div class="space-y-3">
+                <label class="block text-base font-medium text-gray-700">Include Extensions (comma-separated)</label>
+                <input type="text" id="includeExtensions" placeholder="e.g., .js, .py, .html, .css" value="*"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base">
+              </div>
+
+              <div class="space-y-3">
+                <label class="block text-base font-medium text-gray-700">Exclude Extensions (comma-separated)</label>
+                <input type="text" id="excludeExtensions" placeholder="e.g., .log, .tmp, .cache"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base">
+              </div>
             </div>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <script type="text/javascript">
-      {% include "main.js" %}
-    </script>
-    <script>
-      lucide.createIcons();
-    </script>
-  </body >
-</html >
+      <div class="px-8 py-6 border-t border-gray-200 flex justify-end space-x-4 bg-gray-50">
+        <button id="cancelPopup"
+          class="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-base font-medium">
+          Cancel
+        </button>
+        <button id="submitPopup"
+          class="px-8 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-base">
+          <span id="popupSubmitText">Generate Document</span>
+          <div id="popupSubmitLoader" class="hidden inline-flex items-center">
+            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+            Processing...
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    {% include "main.js" %}
+  </script>
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+
+</html>

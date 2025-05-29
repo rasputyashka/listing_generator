@@ -2,9 +2,9 @@ class FileProcessor {
   constructor() {
     this.selectedFiles = new Set();
     this.fileTreeData = [];
-    this.expandedFolders = new Set();    // Track expanded folders
-    this.upload_id = null;               // Store upload ID for later use
-    this.pathTypeMap = new Map();        // NEW: map each path → "file" | "directory"
+    this.expandedFolders = new Set();
+    this.upload_id = null;
+    this.pathTypeMap = new Map();
     this.init();
   }
 
@@ -15,7 +15,6 @@ class FileProcessor {
   }
 
   setupFileUploads() {
-    // DOCX file upload
     const docxFile = document.getElementById('docxFile');
     const docxDropZone = document.getElementById('docxDropZone');
     const docxFileName = document.getElementById('docxFileName');
@@ -29,7 +28,6 @@ class FileProcessor {
       }
     });
 
-    // ZIP file upload
     const zipFile = document.getElementById('zipFile');
     const zipDropZone = document.getElementById('zipDropZone');
     const zipFileName = document.getElementById('zipFileName');
@@ -43,7 +41,6 @@ class FileProcessor {
       }
     });
 
-    // Drag and drop functionality
     [docxDropZone, zipDropZone].forEach(zone => {
       zone.addEventListener('dragover', (e) => {
         e.preventDefault();
@@ -86,7 +83,6 @@ class FileProcessor {
     cancelPopup.addEventListener('click', () => this.hidePopup());
     submitPopup.addEventListener('click', () => this.handlePopupSubmit());
 
-    // Close popup when clicking outside
     popup.addEventListener('click', (e) => {
       if (e.target === popup) {
         this.hidePopup();
@@ -115,7 +111,6 @@ class FileProcessor {
       this.fileTreeData = data.files;
       this.upload_id = data.upload_id;
 
-      // NEW: build the path → type map now that we have fileTreeData
       this._buildPathTypeMap(this.fileTreeData);
 
       this.selectedFiles.clear();
@@ -148,7 +143,6 @@ class FileProcessor {
 
       if (file.type === 'directory') {
         this.selectedFiles.add(fullPath);
-        // Expand all folders by default
         this.expandedFolders.add(fullPath);
         if (file.children) {
           this.initializeSelectedFiles(file.children, fullPath);
@@ -173,7 +167,6 @@ class FileProcessor {
     const treeContainer = document.getElementById('fileTree');
     treeContainer.innerHTML = this.generateTreeHTML(this.fileTreeData);
 
-    // Add event listeners for checkboxes and folder toggles
     treeContainer.addEventListener('change', (e) => {
       if (e.target.type === 'checkbox') {
         this.handleFileSelection(e.target);
@@ -296,7 +289,6 @@ class FileProcessor {
       folderContent.style.display = 'none';
       arrow.classList.remove('rotate-90');
     } else {
-      // Expand folder
       this.expandedFolders.add(folderPath);
       folderContent.style.display = 'block';
       arrow.classList.add('rotate-90');
@@ -310,20 +302,17 @@ class FileProcessor {
     if (checkbox.checked) {
       this.selectedFiles.add(path);
 
-      // If directory, select all children
       if (type === 'directory') {
         this.selectAllChildren(path);
       }
     } else {
       this.selectedFiles.delete(path);
 
-      // If directory, deselect all children
       if (type === 'directory') {
         this.deselectAllChildren(path);
       }
     }
 
-    // Update checkboxes without re-rendering the entire tree
     this.updateCheckboxStates();
   }
 
@@ -342,7 +331,6 @@ class FileProcessor {
       }
     });
 
-    // Also add any files that might not be in selectedFiles yet
     this.addChildrenFromTree(this.fileTreeData, parentPath, '');
   }
 
@@ -375,7 +363,6 @@ class FileProcessor {
   async handlePopupSubmit() {
     this.showPopupLoading(true);
 
-    // Filter selectedFiles → only those whose pathTypeMap entry is "file"
     const onlyFiles = Array.from(this.selectedFiles)
       .filter(path => this.pathTypeMap.get(path) === 'file');
 

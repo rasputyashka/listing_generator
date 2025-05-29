@@ -14,15 +14,8 @@ from fastapi.templating import Jinja2Templates
 from listing_generator.application.commands import (
     FormatTemplateCommand,
 )
+from listing_generator.application.dto import FormatTemplateDTO
 from listing_generator.application.formatters import TemplateFormatter
-from listing_generator.application.filters import (
-    EmptyFileFilter,
-    ExcludeExtensionFilter,
-    ExcludeFileNameFilter,
-    IncludeExtensionFilter,
-    EmptyFilter,
-    InlcudeFileNameFilter,
-)
 from listing_generator.presentation.web.models import (
     FileNode,
     ProcessingConfig,
@@ -140,33 +133,21 @@ async def process_files(config: ProcessingConfig):
     items = config.selected_files
     items = [Path(dir_path) / item for item in items]
 
-    if config.include_files == []:  # TODO: this should be in frontend
-        config.include_files = ["*"]
-    if config.include_extensions == []:
-        config.include_extensions = ["*"]
-
-    filter = ExcludeFileNameFilter(
-        InlcudeFileNameFilter(
-            ExcludeExtensionFilter(
-                IncludeExtensionFilter(
-                    EmptyFilter(items),
-                    included_extensions=config.include_extensions,
-                ),
-                excluded_extensions=config.exclude_extensions,
-            ),
-            included_filenames=config.include_files,
-        ),
+    dto = FormatTemplateDTO(
+        formatter_type=TemplateFormatter,
+        template_path=template_path,
+        source_directory=dir_path,
+        file_list=items,
+        excluded_extensions=config.exclude_extensions,
         excluded_filenames=config.exclude_files,
+        included_extensions=config.include_extensions,
+        included_filenames=config.include_files,
+        minimize_line_count=config.options.minimize_line_count,
+        skip_empty_files=config.options.remove_empty_files,
     )
-    if config.options.minimize_line_count:
-        filter = EmptyFileFilter(filter)
+    command = FormatTemplateCommand()
+    document = command.execute(dto)
 
-    items = filter.filter()
-    logger.debug(f"Filtered items: {items}")
-    command = FormatTemplateCommand(
-        TemplateFormatter, template_path=template_path, source_directory=dir_path
-    )
-    document = command.execute(items, minimize=config.options.minimize_line_count)
     docx_stream = io.BytesIO()
     document.save(docx_stream)
 
